@@ -2,15 +2,26 @@
 
 ## 1. System Design
 
+**Core user actions**
+
+- User can add a pet (and who owns it)
+- Can add a care task for a pet, such as feeding, walking, medication, or vet appointment
+- Allow user to see a prioritized to-do list for today
+
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+I ended up with 4 classes:
+
+- **Owner** - the class that represents a person with their name/email and a list of their pets
+- **Pet** - the class that represents the pet with its name, species, which owner it belongs to, and a list of its tasks
+- **Task** - one task that needs to happen (feed, walk, meds, appointment). Has a duration, priority, preferred time, and whether it repeats
+- **Scheduler** - the class that actually does the work: takes all the tasks and figures out the order, checks for conflicts, and explains the plan
+
+Owner has Pets, Pets have Tasks, and Scheduler just works on top of whatever tasks it's given - it doesn't belong to Owner or Pet, it's more of a helper class.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+- I originally just had a recurring true/false field on Task, but that doesn't actually tell you how often it repeats (daily? weekly?). So I added a  field to say the frequency instead of just yes/no. Rest of the design stayed the same for now.
 
 ---
 

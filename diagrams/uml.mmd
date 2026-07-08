@@ -1,15 +1,43 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
+    %% PawPal+ draft UML (Phase 1)
+    %% Core actions supported: add a pet, add/schedule a care task, view today's prioritized plan.
 
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Owner {
+        +str name
+        +str email
+        +List~Pet~ pets
+        +add_pet(pet: Pet) None
+        +get_all_tasks() List~Task~
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Pet {
+        +str name
+        +str species
+        +str owner_name
+        +List~Task~ tasks
+        +add_task(task: Task) None
     }
 
-    ClassName --> AnotherClass : relationship
+    class Task {
+        +str title
+        +str task_type
+        +int duration_minutes
+        +str priority
+        +str preferred_time
+        +bool recurring
+        +str recurrence_rule
+        +str pet_name
+        +bool completed
+        +mark_complete() None
+    }
+
+    class Scheduler {
+        +List~Task~ tasks
+        +build_schedule(tasks: List~Task~) List~Task~
+        +detect_conflicts(tasks: List~Task~) List~tuple~
+        +explain_schedule(schedule: List~Task~) str
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" --> "*" Task : has
+    Scheduler ..> Task : builds schedule from
