@@ -1,13 +1,15 @@
 """PawPal+ backend logic layer.
 
 Owner -> Pet -> Task, with Scheduler as a standalone helper that
-orders, checks, and explains a set of tasks.
+sorts, filters, checks, and explains a set of tasks.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from datetime import date, timedelta
 from typing import List, Optional, Tuple
 
 PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
+RECURRENCE_INTERVALS = {"daily": timedelta(days=1), "weekly": timedelta(weeks=1)}
 
 
 @dataclass
@@ -20,13 +22,22 @@ class Task:
     priority: str  # "low" | "medium" | "high"
     preferred_time: Optional[str] = None  # e.g. "08:00"
     recurring: bool = False
-    recurrence_rule: Optional[str] = None  # e.g. "daily", "weekly" - used when recurring=True
+    recurrence_rule: Optional[str] = None  # "daily" | "weekly" - used when recurring=True
     pet_name: Optional[str] = None
     completed: bool = False
+    due_date: date = field(default_factory=date.today)
 
-    def mark_complete(self) -> None:
-        """Mark this task as done."""
+    def mark_complete(self) -> Optional["Task"]:
+        """Mark this task done. If it's recurring, return the next occurrence."""
         self.completed = True
+        if not self.recurring:
+            return None
+        return self._next_occurrence()
+
+    def _next_occurrence(self) -> "Task":
+        """Build the next copy of this task, due one interval after this one."""
+        interval = RECURRENCE_INTERVALS.get(self.recurrence_rule, timedelta(days=1))
+        return replace(self, due_date=self.due_date + interval, completed=False)
 
 
 @dataclass
@@ -66,7 +77,7 @@ class Owner:
 
 
 class Scheduler:
-    """Orders, checks, and explains a set of tasks."""
+    """Sorts, filters, checks, and explains a set of tasks."""
 
     def __init__(self, tasks: Optional[List[Task]] = None):
         self.tasks: List[Task] = tasks or []
@@ -80,8 +91,27 @@ class Scheduler:
 
         return sorted(tasks, key=sort_key)
 
+    def sort_by_time(self, tasks: List[Task]) -> List[Task]:
+        """Return tasks sorted purely by their preferred time, ignoring priority."""
+        return sorted(tasks, key=lambda task: task.preferred_time or "23:59")
+
+    def filter_tasks(
+        self,
+        tasks: List[Task],
+        pet_name: Optional[str] = None,
+        completed: Optional[bool] = None,
+    ) -> List[Task]:
+        """Return tasks narrowed down by pet name and/or completion status."""
+        result = tasks
+        if pet_name is not None:
+            result = [t for t in result if t.pet_name == pet_name]
+        if completed is not None:
+            result = [t for t in result if t.completed == completed]
+        return result
+
     def detect_conflicts(self, tasks: List[Task]) -> List[Tuple[Task, Task]]:
-        """Return pairs of tasks whose time windows overlap."""
+        """Return pairs of tasks whose time windows overlap (a lightweight warning,
+        not an exception - callers decide what to do with the pairs)."""
 
         def to_minutes(hhmm: str) -> int:
             hours, minutes = hhmm.split(":")

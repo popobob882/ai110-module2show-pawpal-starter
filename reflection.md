@@ -29,13 +29,11 @@ Owner has Pets, Pets have Tasks, and Scheduler just works on top of whatever tas
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+My scheduler mainly looks at priority and time. build_schedule sorts high priority tasks first, then breaks ties by preferred time. I went with priority first because things like meds usually matter more than something like grooming, even if grooming happens earlier in the day. Time still matters though, so I added sort_by_time as a separate method for when someone just wants to see the day in order, not by importance.
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+detect_conflicts only checks if two tasks' time + duration windows overlap at all. As a result, it doesn't know or care if the tasks are for the same pet or different pets. So two tasks for two different pets at the same time still count as a "conflict," even though in real life a friend or family member could handle one of them. I think that's a fair tradeoff for now, since the owner is probably the one doing everything themselves, and it keeps the conflict check simple (just compare start/end times) instead of having to model who else is available.
 
 ---
 
