@@ -76,27 +76,43 @@ Incomplete tasks for Mochi (filter by completion status):
 
 ## 🧪 Testing PawPal+
 
-```bash
-# Run the full test suite:
-pytest
+Run the suite with:
 
-# Run with coverage:
-pytest --cov
+```bash
+python -m pytest
 ```
+
+`tests/test_pawpal.py` covers both the "happy path" behaviors and a handful of edge cases:
+
+- Marking a task complete updates its status
+- Adding a task to a pet increases that pet's task count
+- `sort_by_time` puts tasks in chronological order, and pushes tasks with no preferred time to the end
+- `filter_tasks` narrows a task list down by pet name and by completion status
+- `detect_conflicts` flags two tasks that overlap in time, but does *not* flag two tasks that are simply back-to-back
+- Completing a recurring task returns the next occurrence, one day later for `daily` and seven days later for `weekly`; a non-recurring task returns `None`
+- Empty-input edge cases: a pet with no tasks, an owner with no pets, and every `Scheduler` method given an empty list
 
 Sample test output:
 
 ```
-tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [ 14%]
-tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [ 28%]
-tests/test_pawpal.py::test_sort_by_time_orders_earliest_first PASSED     [ 42%]
-tests/test_pawpal.py::test_filter_tasks_by_pet_and_completion PASSED     [ 57%]
-tests/test_pawpal.py::test_detect_conflicts_flags_overlapping_times PASSED [ 71%]
-tests/test_pawpal.py::test_mark_complete_on_recurring_task_returns_next_occurrence PASSED [ 85%]
-tests/test_pawpal.py::test_mark_complete_on_non_recurring_task_returns_none PASSED [100%]
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [  7%]
+tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [ 15%]
+tests/test_pawpal.py::test_sort_by_time_orders_earliest_first PASSED     [ 23%]
+tests/test_pawpal.py::test_filter_tasks_by_pet_and_completion PASSED     [ 30%]
+tests/test_pawpal.py::test_detect_conflicts_flags_overlapping_times PASSED [ 38%]
+tests/test_pawpal.py::test_mark_complete_on_recurring_task_returns_next_occurrence PASSED [ 46%]
+tests/test_pawpal.py::test_mark_complete_on_weekly_recurring_task_adds_seven_days PASSED [ 53%]
+tests/test_pawpal.py::test_mark_complete_on_non_recurring_task_returns_none PASSED [ 61%]
+tests/test_pawpal.py::test_pet_with_no_tasks_has_empty_task_list PASSED  [ 69%]
+tests/test_pawpal.py::test_owner_with_no_pets_has_no_tasks PASSED        [ 76%]
+tests/test_pawpal.py::test_scheduler_handles_empty_task_list PASSED      [ 84%]
+tests/test_pawpal.py::test_adjacent_back_to_back_tasks_do_not_conflict PASSED [ 92%]
+tests/test_pawpal.py::test_tasks_without_a_preferred_time_sort_last PASSED [100%]
 
-============================== 7 passed in 0.04s ==============================
+============================= 13 passed in 0.06s ==============================
 ```
+
+**Confidence level:** ⭐⭐⭐⭐☆ (4/5) — the core sorting, filtering, conflict, and recurrence logic is well covered and passing. What would push this to a 5: tests around the `app.py`/`st.session_state` wiring itself, and conflict detection across midnight (e.g. a task at 23:45 running past 00:00).
 
 ## 📐 Smarter Scheduling
 

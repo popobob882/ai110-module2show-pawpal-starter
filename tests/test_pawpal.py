@@ -1,7 +1,9 @@
 from datetime import timedelta
 
-from pawpal_system import Task, Pet, Scheduler
+from pawpal_system import Task, Pet, Owner, Scheduler
 
+
+# --- Happy paths ---
 
 def test_mark_complete_changes_status():
     task = Task("Walk", "walk", 20, "medium")
@@ -56,6 +58,51 @@ def test_mark_complete_on_recurring_task_returns_next_occurrence():
     assert next_task.due_date == original_due_date + timedelta(days=1)
 
 
+def test_mark_complete_on_weekly_recurring_task_adds_seven_days():
+    task = Task(
+        "Flea treatment", "medication", 5, "medium", recurring=True, recurrence_rule="weekly"
+    )
+    original_due_date = task.due_date
+
+    next_task = task.mark_complete()
+
+    assert next_task.due_date == original_due_date + timedelta(weeks=1)
+
+
 def test_mark_complete_on_non_recurring_task_returns_none():
     task = Task("One-time vet visit", "appointment", 45, "high")
     assert task.mark_complete() is None
+
+
+# --- Edge cases ---
+
+def test_pet_with_no_tasks_has_empty_task_list():
+    pet = Pet("Ghost", "hamster")
+    assert pet.tasks == []
+
+
+def test_owner_with_no_pets_has_no_tasks():
+    owner = Owner("Alex")
+    assert owner.get_all_tasks() == []
+
+
+def test_scheduler_handles_empty_task_list():
+    scheduler = Scheduler()
+    assert scheduler.build_schedule([]) == []
+    assert scheduler.sort_by_time([]) == []
+    assert scheduler.filter_tasks([]) == []
+    assert scheduler.detect_conflicts([]) == []
+
+
+def test_adjacent_back_to_back_tasks_do_not_conflict():
+    scheduler = Scheduler()
+    first = Task("Morning walk", "walk", 30, "medium", preferred_time="08:00")
+    second = Task("Feeding", "feeding", 10, "high", preferred_time="08:30")
+    assert scheduler.detect_conflicts([first, second]) == []
+
+
+def test_tasks_without_a_preferred_time_sort_last():
+    scheduler = Scheduler()
+    anytime = Task("Play time", "walk", 15, "low")
+    timed = Task("Feed", "feeding", 10, "high", preferred_time="08:00")
+    assert scheduler.sort_by_time([anytime, timed]) == [timed, anytime]
