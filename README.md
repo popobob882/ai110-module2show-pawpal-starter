@@ -44,14 +44,15 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Output from running `python main.py`:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+Today's Schedule:
+- [HIGH] 08:00 - Morning feeding for Mochi (10 min)
+- [HIGH] 10:00 - Vet checkup for Rex (45 min)
+- [MEDIUM] 18:00 - Evening walk for Rex (30 min)
+
+No conflicts found.
 ```
 
 ## 🧪 Testing PawPal+
@@ -67,7 +68,10 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [ 50%]
+tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [100%]
+
+============================== 2 passed in 0.08s ==============================
 ```
 
 ## 📐 Smarter Scheduling
@@ -76,10 +80,10 @@ Sample test output:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | Scheduler.build_schedule | Sorts by priority (high > medium > low) first, then by preferred time |
+| Filtering | *(not yet implemented)* | Planned: skip/defer tasks once the day is fully booked |
+| Conflict handling | Scheduler.detect_conflicts | Flags any two tasks whose time + duration windows overlap |
+| Recurring tasks | Task.recurring, Task.recurrence_rule | Tasks can be flagged as recurring. Regenerating recurring tasks each day is not implemented yet |
 
 ## 📸 Demo Walkthrough
 
