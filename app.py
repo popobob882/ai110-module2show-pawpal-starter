@@ -77,20 +77,38 @@ else:
         st.success(f"Added '{task_title}' for {task_pet}.")
 
 all_tasks = owner.get_all_tasks()
+scheduler = Scheduler()
+
 if all_tasks:
     st.write("All tasks:")
-    st.table(
-        [
-            {
-                "pet": t.pet_name,
-                "title": t.title,
-                "time": t.preferred_time,
-                "duration": t.duration_minutes,
-                "priority": t.priority,
-            }
-            for t in all_tasks
-        ]
+
+    pet_filter_options = ["All pets"] + [p.name for p in owner.pets]
+    col1, col2 = st.columns(2)
+    with col1:
+        pet_filter = st.selectbox("Filter by pet", pet_filter_options)
+    with col2:
+        status_filter = st.selectbox("Filter by status", ["All", "Incomplete", "Completed"])
+
+    filtered_tasks = scheduler.filter_tasks(
+        all_tasks,
+        pet_name=None if pet_filter == "All pets" else pet_filter,
+        completed=None if status_filter == "All" else status_filter == "Completed",
     )
+
+    def _as_row(task: Task) -> dict:
+        return {
+            "pet": task.pet_name,
+            "title": task.title,
+            "time": task.preferred_time,
+            "duration": task.duration_minutes,
+            "priority": task.priority,
+            "completed": task.completed,
+        }
+
+    if filtered_tasks:
+        st.table([_as_row(t) for t in scheduler.sort_by_time(filtered_tasks)])
+    else:
+        st.info("No tasks match that filter.")
 
 st.divider()
 
@@ -100,14 +118,27 @@ if st.button("Generate schedule"):
     if not all_tasks:
         st.warning("Add at least one task before generating a schedule.")
     else:
-        scheduler = Scheduler()
         schedule = scheduler.build_schedule(all_tasks)
-        st.text(scheduler.explain_schedule(schedule))
+        st.table(
+            [
+                {
+                    "priority": task.priority.upper(),
+                    "time": task.preferred_time or "anytime",
+                    "title": task.title,
+                    "pet": task.pet_name,
+                    "duration": task.duration_minutes,
+                }
+                for task in schedule
+            ]
+        )
 
         conflicts = scheduler.detect_conflicts(all_tasks)
         if conflicts:
-            st.warning("Conflicts found:")
-            for task_a, task_b in conflicts:
-                st.write(f"- {task_a.title} overlaps with {task_b.title}")
+            conflict_lines = "\n".join(
+                f"- **{task_a.title}** ({task_a.pet_name}) overlaps with "
+                f"**{task_b.title}** ({task_b.pet_name}) at {task_a.preferred_time}"
+                for task_a, task_b in conflicts
+            )
+            st.warning(f"⚠️ Scheduling conflicts found:\n\n{conflict_lines}")
         else:
-            st.success("No conflicts found.")
+            st.success("No conflicts found. This schedule is good to go!")

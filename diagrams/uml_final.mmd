@@ -1,0 +1,48 @@
+classDiagram
+    %% PawPal+ final UML - matches pawpal_system.py after Phases 2-4.
+
+    class Task {
+        +str title
+        +str task_type
+        +int duration_minutes
+        +str priority
+        +str preferred_time
+        +bool recurring
+        +str recurrence_rule
+        +str pet_name
+        +bool completed
+        +date due_date
+        +mark_complete() Task
+        -_next_occurrence() Task
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +str owner_name
+        +List~Task~ tasks
+        +add_task(task: Task) None
+    }
+
+    class Owner {
+        +str name
+        +str email
+        +List~Pet~ pets
+        +add_pet(pet: Pet) None
+        +get_all_tasks() List~Task~
+    }
+
+    class Scheduler {
+        +List~Task~ tasks
+        +build_schedule(tasks: List~Task~) List~Task~
+        +sort_by_time(tasks: List~Task~) List~Task~
+        +filter_tasks(tasks: List~Task~, pet_name: str, completed: bool) List~Task~
+        +detect_conflicts(tasks: List~Task~) List~tuple~
+        +explain_schedule(schedule: List~Task~) str
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" --> "*" Task : has
+    Scheduler ..> Task : sorts, filters, and checks
+
+    note for Task "mark_complete() returns the next\noccurrence when recurring=True,\nusing recurrence_rule + due_date"

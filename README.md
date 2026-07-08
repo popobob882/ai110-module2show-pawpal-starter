@@ -12,6 +12,15 @@ A busy pet owner needs help staying consistent with pet care. They want an assis
 
 Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
 
+## ✨ Features
+
+- Add owners, pets, and care tasks (feeding, walks, meds, appointments) right from the app
+- Smart scheduling: tasks are sorted by priority first, then by time, so the important stuff shows up first
+- Time-only sorting, for when you just want to see the day in order
+- Filter tasks by pet or by whether they're done yet
+- Conflict warnings: if two tasks overlap in time, the app flags it instead of quietly double-booking you
+- Recurring tasks: mark a daily or weekly task complete and the next one gets scheduled automatically
+
 ## What you will build
 
 Your final app should:
@@ -126,12 +135,42 @@ tests/test_pawpal.py::test_tasks_without_a_preferred_time_sort_last PASSED [100%
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+1. Set the owner's name (and optional email) at the top of the page.
+2. Add a pet: type a name, pick a species, and click "Add pet." Add a second pet too - they both show up in a table right away.
+3. Add a task for a pet: title, type, duration, priority, and a preferred time, then click "Add task." Add a few tasks across your pets, including two at the same time, so there's something for the conflict check to catch later.
+4. Use the "Filter by pet" and "Filter by status" dropdowns above the task table to narrow down what you're looking at - the table underneath is also sorted by time automatically.
+5. Click "Generate schedule" to see the full day sorted by priority-then-time. If any tasks overlap, a warning lists exactly which ones and when; otherwise you get a success message saying the schedule is conflict-free.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+This walkthrough shows off the main Scheduler behaviors: priority+time sorting (`build_schedule`), time-only sorting (`sort_by_time`), pet/status filtering (`filter_tasks`), and conflict warnings (`detect_conflicts`). Recurring tasks (completing a daily/weekly task to generate its next occurrence) are demonstrated in `main.py` rather than the UI - see the CLI output below.
+
+Sample CLI output from `python main.py`:
+
+```
+Today's Schedule:
+- [HIGH] 08:00 - Morning feeding for Mochi (10 min)
+- [HIGH] 10:00 - Vet checkup for Rex (45 min)
+- [MEDIUM] 10:00 - Grooming for Mochi (30 min)
+- [MEDIUM] 18:00 - Evening walk for Rex (30 min)
+
+Sorted purely by time:
+- 08:00 Morning feeding (Mochi)
+- 10:00 Grooming (Mochi)
+- 10:00 Vet checkup (Rex)
+- 18:00 Evening walk (Rex)
+
+Rex's tasks only (filter by pet):
+- Evening walk
+- Vet checkup
+
+Conflicts found:
+- Grooming overlaps with Vet checkup
+
+Completing the recurring feeding task...
+'Morning feeding' done for 2026-07-07; next one scheduled for 2026-07-08.
+
+Incomplete tasks for Mochi (filter by completion status):
+- Grooming (due 2026-07-07)
+- Morning feeding (due 2026-07-08)
+```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->

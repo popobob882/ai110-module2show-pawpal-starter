@@ -41,13 +41,11 @@ detect_conflicts only checks if two tasks' time + duration windows overlap at al
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used AI the whole way through, but for different things at each stage. I used it to help me draw the UML at the start, as helping me write my pytest tests. I kept the testing phase in its own chat instead of continuing the implementation chat, which helped as it forced me to describe behaviors in plain English ("what happens if a pet has no tasks?") instead of just pointing at code, and that ended up surfacing edge cases I hadn't thought of yet such as the fact that adjacent tasks that shouldn't count as conflicts. I felt that the most useful prompts to me were specific ones describing a specific scenario rahter than vague ones like "make this better."
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+One thing I rejected from AI was when it suggested the recurring tasks to just have a true/false recurring flag. I realized that completing a task would just leave it marked done. That's not actually useful as the app has no way to know if "recurring" means every day or every week. So I pushed back and added a recurrence_rule field and a due_date so completing a task can actually compute the next one. I verified this by writing tests for the exact edge cases I was worried about instead of trusting that the code "looked right."
 
 ---
 
@@ -55,13 +53,11 @@ detect_conflicts only checks if two tasks' time + duration windows overlap at al
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+I tested the two "happy path" things I cared about most which were tasks getting sorted correctly (by priority and separately by time) and completing a recurring task creating the next one. Then I added edge cases: a pet with zero tasks, an owner with zero pets, every Scheduler method given an empty list, and two tasks that are back-to-back but shouldn't count as a conflict. I thought these mattered because the sorting/conflict/recurrence logic is the whole point of the app.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+Pretty confident - 13 tests pass and they cover both normal cases and the edge cases I could think of. If I had more time I'd want to test conflicts that cross midnight (like a task at 23:45 running into the next day) as it was something I didn't think about yet.
 
 ---
 
@@ -69,12 +65,11 @@ detect_conflicts only checks if two tasks' time + duration windows overlap at al
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I think the whole project went well. I think the part that went the best in my opinion was the testing portion as it didn't have huge errors that I needed to fix.
 
 **b. What you would improve**
-
-- If you had another iteration, what would you improve or redesign?
+What I would probably improve on would be the due date as it exists on Task but the UI doesn't really use it as everything is framed as "today.If I had more time, I'd want the app to actually look at due dates, so recurring tasks show up on the right day instead of just accumulating.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+I think that what I would take away would be that I'm the main person designing the project and that I should be the main person making the decisions and not the AI. It should just be a tool to help me write code and brainstorm but I should be someone who still udnerstands whats going on and the person that makes all the choices.
